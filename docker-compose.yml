@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # API Server
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: search-agents-api
+    restart: unless-stopped
+    ports:
+      - "${SAGENT_PORT:-8000}:8000"
+    environment:
+      - SAGENT_HOST=0.0.0.0
+      - SAGENT_PORT=${SAGENT_PORT:-8000}
+      - SAGENT_TIMEOUT=${SAGENT_TIMEOUT:-10}
+      - SAGENT_PROXY=${SAGENT_PROXY:-}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    volumes:
+      - api-data:/home/appuser/data
+    networks:
+      - search-agents-network
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  api-data:
+    driver: local
+
+networks:
+  search-agents-network:
+    driver: bridge

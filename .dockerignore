@@ -1,0 +1,40 @@
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+sagent
+sagent-api
+
+# Test binaries
+tests/
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Documentation (not needed in container)
+*.md
+LICENSE
+
+# Development files
+.env.example
+Makefile
+start_api.sh
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
