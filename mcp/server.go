@@ -89,7 +89,7 @@ func (s *Server) RunStdioAsync() error {
 func (s *Server) handleRequest(req Request) {
 	switch req.Method {
 	case "initialize":
-		s.handleInitialize(req.ID)
+		s.handleInitialize(req.ID, req.Params)
 	case "tools/list":
 		s.handleToolsList(req.ID)
 	case "tools/call":
@@ -99,10 +99,23 @@ func (s *Server) handleRequest(req Request) {
 	}
 }
 
-// handleInitialize responds to initialize request.
-func (s *Server) handleInitialize(id interface{}) {
+// handleInitialize responds to initialize request. The protocol version is negotiated: the
+// server adopts the version the client asked for when it sends one and falls back to the
+// current revision otherwise. Echoing keeps the handshake working with both older clients
+// (2024-11-05) and the latest ones (2025-11-25), instead of pinning every client to a single
+// revision and failing the ones that moved on.
+func (s *Server) handleInitialize(id interface{}, params json.RawMessage) {
+	version := "2025-11-25"
+	if len(params) > 0 {
+		var p struct {
+			ProtocolVersion string `json:"protocolVersion"`
+		}
+		if err := json.Unmarshal(params, &p); err == nil && p.ProtocolVersion != "" {
+			version = p.ProtocolVersion
+		}
+	}
 	result := map[string]interface{}{
-		"protocolVersion": "2024-11-05",
+		"protocolVersion": version,
 		"capabilities": map[string]interface{}{
 			"tools": map[string]interface{}{},
 		},
